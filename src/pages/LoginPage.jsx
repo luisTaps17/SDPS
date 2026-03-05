@@ -63,7 +63,7 @@ export default function LoginPage({ onLogin }) {
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        <div className="login-hint">Demo credentials: admin / admin123</div>
+        <div className="login-hint">Forgot password?</div>
       </div>
     </div>
   );

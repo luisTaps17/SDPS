@@ -35,13 +35,13 @@ export default function ThresholdConfig() {
             {THRESHOLDS.map((t, i) => (
               <div key={t.key}>
                 <div className="threshold-row">
-                  {/* Label */}
+                  
                   <div>
                     <div className="threshold-name">{t.label}</div>
                     <div className="threshold-sub">{t.sub}</div>
                   </div>
 
-                  {/* Slider */}
+                  
                   <div>
                     <input
                       type="range"
@@ -56,7 +56,7 @@ export default function ThresholdConfig() {
                     </div>
                   </div>
 
-                  {/* Value display */}
+                 
                   <div>
                     <div className="threshold-val">{vals[t.key]}</div>
                     <span className="threshold-unit">{t.unit}</span>

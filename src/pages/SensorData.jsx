@@ -5,7 +5,7 @@ import { SENSORS, CHART_DATA } from "../data/mockData";
 export default function SensorData() {
   return (
     <>
-      {/* Trend Chart */}
+      
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -18,7 +18,7 @@ export default function SensorData() {
         </div>
       </div>
 
-      {/* Sensor Table */}
+      
       <div className="card">
         <div className="card-header">
           <div className="card-title">

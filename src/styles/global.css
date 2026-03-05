@@ -345,6 +345,7 @@ body {
   display: flex;
   gap: 32px;
   justify-content: center;
+
 }
 .gauge-item {
   display: flex; flex-direction: column;

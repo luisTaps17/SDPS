@@ -12,7 +12,7 @@ export default function AlertsPage() {
 
   return (
     <>
-      {/* Summary */}
+      
       <div className="stat-grid">
         <StatCard label="Critical" value={counts.critical} icon="🚨" color="red"    sub="Immediate action needed" />
         <StatCard label="Warnings" value={counts.warning}  icon="⚠️" color="yellow" sub="Needs monitoring" />
@@ -20,7 +20,7 @@ export default function AlertsPage() {
         <StatCard label="Resolved" value={counts.resolved} icon="✅" color="green"  sub="Cleared alerts" />
       </div>
 
-      {/* Full Alert List */}
+      
       <div className="card">
         <div className="card-header">
           <div className="card-title">

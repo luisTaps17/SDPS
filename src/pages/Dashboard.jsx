@@ -10,7 +10,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Stat Cards */}
+      
       <div className="stat-grid">
         <StatCard label="Active Sensors"  value="5" unit="/6" icon="📡" color="blue"   sub="1 sensor offline" />
         <StatCard label="Critical Alerts" value={critCount}   icon="🚨" color="red"    sub="Requires immediate action" />
@@ -18,7 +18,7 @@ export default function Dashboard() {
         <StatCard label="Sensors OK"      value="3"           icon="✅" color="green"  sub="Operating normally" />
       </div>
 
-      {/* Charts Row */}
+      
       <div className="two-col">
         <div className="card">
           <div className="card-header">
@@ -45,7 +45,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Alerts */}
+      
       <div className="card">
         <div className="card-header">
           <div className="card-title">
