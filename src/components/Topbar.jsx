@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 
 const PAGE_TITLES = {
-  dashboard: { title: "Dashboard",         crumb: "Overview" },
-  sensors:   { title: "Sensor Data",       crumb: "Visualization" },
-  alerts:    { title: "Alert Management",  crumb: "Warnings & History" },
-  threshold: { title: "Threshold Config",  crumb: "System Settings" },
+  dashboard: { title: "Dashboard",        crumb: "Overview" },
+  sensors:   { title: "Sensor Data",      crumb: "Visualization" },
+  alerts:    { title: "Alert Management", crumb: "Warnings & History" },
+  threshold: { title: "Threshold Config", crumb: "System Settings" },
+  settings:  { title: "Settings",         crumb: "User & System Preferences" },
 };
 
-export default function Topbar({ page, onLogout }) {
+export default function Topbar({ page, userInfo, systemStatus, onLogout }) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -25,7 +26,14 @@ export default function Topbar({ page, onLogout }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <div className="topbar-title">{title}</div>
+        <div className="topbar-title">
+          {title}
+          {systemStatus === "maintenance" && (
+            <span style={{ marginLeft: 10, fontSize: 11, background: "#f59e0b", color: "#fff", borderRadius: 4, padding: "2px 7px", verticalAlign: "middle" }}>
+              🔧 Maintenance
+            </span>
+          )}
+        </div>
         <div className="topbar-breadcrumb">Admin / {crumb}</div>
       </div>
 
@@ -33,7 +41,7 @@ export default function Topbar({ page, onLogout }) {
         <div className="topbar-time">{formatted}</div>
         <div className="topbar-user">
           <div className="user-avatar">👤</div>
-          Admin
+          {userInfo?.name || "Admin"}
         </div>
         <button className="btn-logout" onClick={onLogout}>
           Log out

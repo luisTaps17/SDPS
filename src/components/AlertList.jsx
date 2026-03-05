@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 const ICONS = {
   critical: "🚨",
   warning:  "⚠️",
@@ -7,12 +5,9 @@ const ICONS = {
   resolved: "✅",
 };
 
-export default function AlertList({ alerts }) {
-  const [dismissed, setDismissed] = useState([]);
-
-  const visible = alerts.filter((a) => !dismissed.includes(a.id));
-
-  if (visible.length === 0) {
+// onDismiss is optional — if passed, uses parent state (AlertsPage); otherwise no-op
+export default function AlertList({ alerts, onDismiss }) {
+  if (alerts.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-light)", fontSize: 13 }}>
         ✓ No active alerts
@@ -22,7 +17,7 @@ export default function AlertList({ alerts }) {
 
   return (
     <div className="alert-list">
-      {visible.map((a) => (
+      {alerts.map((a) => (
         <div key={a.id} className={`alert-item ${a.type}`}>
           <div className="alert-icon">{ICONS[a.type]}</div>
 
@@ -34,12 +29,12 @@ export default function AlertList({ alerts }) {
 
           <div className="alert-right">
             <span className={`type-badge badge-${a.type}`}>{a.type}</span>
-            {a.type !== "resolved" && (
+            {a.type !== "resolved" && onDismiss && (
               <div style={{ display: "flex", gap: 6 }}>
                 <button className="btn-ack">Acknowledge</button>
                 <button
                   className="btn-dismiss"
-                  onClick={() => setDismissed((d) => [...d, a.id])}
+                  onClick={() => onDismiss(a.id)}
                 >
                   Dismiss
                 </button>

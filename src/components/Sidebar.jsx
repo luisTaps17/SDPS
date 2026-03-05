@@ -1,9 +1,12 @@
-export default function Sidebar({ page, setPage, alertCount }) {
+import { NavLink } from "react-router-dom";
+
+export default function Sidebar({ alertCount, systemStatus }) {
   const navItems = [
-    { id: "dashboard", label: "Dashboard",    icon: "📊" },
-    { id: "sensors",   label: "Sensor Data",  icon: "📡" },
-    { id: "alerts",    label: "Alerts",       icon: "🔔", badge: alertCount },
-    { id: "threshold", label: "Thresholds",   icon: "⚙️" },
+    { to: "/dashboard", label: "Dashboard",   icon: "📊" },
+    { to: "/sensors",   label: "Sensor Data", icon: "📡" },
+    { to: "/alerts",    label: "Alerts",      icon: "🔔", badge: alertCount },
+    { to: "/threshold", label: "Thresholds",  icon: "⚙️" },
+    { to: "/settings",  label: "Settings",    icon: "🛠️" },
   ];
 
   return (
@@ -19,24 +22,25 @@ export default function Sidebar({ page, setPage, alertCount }) {
       <nav className="sidebar-nav">
         <div className="nav-label">Menu</div>
         {navItems.map((item) => (
-          <div
-            key={item.id}
-            className={`nav-item ${page === item.id ? "active" : ""}`}
-            onClick={() => setPage(item.id)}
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
+            style={{ textDecoration: "none", color: "inherit" }}
           >
             <span className="nav-item-icon">{item.icon}</span>
             {item.label}
             {item.badge > 0 && (
               <span className="nav-badge">{item.badge}</span>
             )}
-          </div>
+          </NavLink>
         ))}
       </nav>
 
       <div className="sidebar-footer">
         <div className="sidebar-footer-status">
-          <span className="dot" />
-          System Online
+          <span className={`dot ${systemStatus === "maintenance" ? "dot-warn" : ""}`} />
+          {systemStatus === "maintenance" ? "Maintenance Mode" : "System Online"}
         </div>
         <div>6 Sensors Linked</div>
         <div style={{ marginTop: 2 }}>v2.4.1</div>

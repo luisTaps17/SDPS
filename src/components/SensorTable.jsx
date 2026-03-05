@@ -25,7 +25,8 @@ function StatusPill({ status }) {
   return <span className={`pill ${cls}`}>{label}</span>;
 }
 
-export default function SensorTable({ sensors }) {
+// Task 1: accepts sensorStates + onToggle to show active/inactive toggle per row
+export default function SensorTable({ sensors, sensorStates = {}, onToggle }) {
   return (
     <div className="table-wrap">
       <table>
@@ -38,38 +39,61 @@ export default function SensorTable({ sensors }) {
             <th>Temp</th>
             <th>Last Ping</th>
             <th>Status</th>
+            {onToggle && <th>Active</th>}
           </tr>
         </thead>
         <tbody>
-          {sensors.map((s) => (
-            <tr key={s.id}>
-              <td style={{ fontFamily: "var(--font-mono)", color: "var(--blue)", fontWeight: 600 }}>
-                {s.id}
-              </td>
-              <td style={{ color: "var(--text)", fontWeight: 500 }}>{s.location}</td>
-              <td><ProgressBar value={s.waterLevel} /></td>
-              <td>
-                <div className="prog-wrap">
-                  <div className="prog-bar">
-                    <div className="prog-fill" style={{
-                      width: `${s.waste}%`,
-                      background: s.waste > 80 ? "var(--red)" : s.waste > 55 ? "var(--orange)" : "var(--green)"
-                    }} />
+          {sensors.map((s) => {
+            const isActive = sensorStates[s.id] !== false;
+            return (
+              <tr key={s.id} style={{ opacity: isActive ? 1 : 0.45 }}>
+                <td style={{ fontFamily: "var(--font-mono)", color: "var(--blue)", fontWeight: 600 }}>
+                  {s.id}
+                </td>
+                <td style={{ color: "var(--text)", fontWeight: 500 }}>{s.location}</td>
+                <td><ProgressBar value={s.waterLevel} /></td>
+                <td>
+                  <div className="prog-wrap">
+                    <div className="prog-bar">
+                      <div className="prog-fill" style={{
+                        width: `${s.waste}%`,
+                        background: s.waste > 80 ? "var(--red)" : s.waste > 55 ? "var(--orange)" : "var(--green)"
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: 12, fontWeight: 600, minWidth: 32,
+                      color: s.waste > 80 ? "var(--red)" : s.waste > 55 ? "var(--orange)" : "var(--green)"
+                    }}>{s.waste}%</span>
                   </div>
-                  <span style={{
-                    fontSize: 12, fontWeight: 600, minWidth: 32,
-                    color: s.waste > 80 ? "var(--red)" : s.waste > 55 ? "var(--orange)" : "var(--green)"
-                  }}>{s.waste}%</span>
-                </div>
-              </td>
-              <td style={{ fontFamily: "var(--font-mono)" }}>{s.temp}</td>
-              <td style={{
-                fontFamily: "var(--font-mono)",
-                color: s.status === "offline" ? "var(--red)" : "var(--text-light)"
-              }}>{s.lastPing}</td>
-              <td><StatusPill status={s.status} /></td>
-            </tr>
-          ))}
+                </td>
+                <td style={{ fontFamily: "var(--font-mono)" }}>{s.temp}</td>
+                <td style={{
+                  fontFamily: "var(--font-mono)",
+                  color: s.status === "offline" ? "var(--red)" : "var(--text-light)"
+                }}>{s.lastPing}</td>
+                <td><StatusPill status={s.status} /></td>
+                {onToggle && (
+                  <td>
+                    <button
+                      onClick={() => onToggle(s.id)}
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: 5,
+                        border: "none",
+                        background: isActive ? "#22c55e" : "#64748b",
+                        color: "#fff",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {isActive ? "ON" : "OFF"}
+                    </button>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
