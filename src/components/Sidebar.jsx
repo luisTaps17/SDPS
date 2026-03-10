@@ -26,7 +26,7 @@ export default function Sidebar({ alertCount, systemStatus }) {
             key={item.to}
             to={item.to}
             className={({ isActive }) => `nav-item${isActive ? " active" : ""}`}
-            style={{ textDecoration: "none", color: "inherit" }}
+            style={{ textDecoration: "none", color: "white" }}
           >
             <span className="nav-item-icon">{item.icon}</span>
             {item.label}

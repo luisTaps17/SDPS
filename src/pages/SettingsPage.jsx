@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setSystemStatus }) {
-  // Task 1 & 2: Controlled form state for user preferences and system settings
+  
   const [form, setForm] = useState({
     name:             userInfo?.name  || "Admin",
     email:            userInfo?.email || "admin@sdps.local",
@@ -51,7 +51,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
 
   return (
     <>
-      {/* ── User Profile Form ─────────────────────────────── */}
+      {/* User Profile Form */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div className="card-title">
@@ -120,7 +120,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
         </div>
       </div>
 
-      {/* ── Notification Preferences ──────────────────────── */}
+      {/* Notification Preferences */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div className="card-title">
@@ -162,7 +162,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
         </div>
       </div>
 
-      {/* ── System Preferences ────────────────────────────── */}
+      {/* System Preferences */}
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -203,7 +203,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
           {/* Maintenance Mode toggle — updates systemStatus in App.jsx */}
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
-            background: maintenanceToggle ? "#451a03" : "#0f172a",
+            background: maintenanceToggle ? "#451a03" : "#ffffff",
             border: `1px solid ${maintenanceToggle ? "#f59e0b" : "#1e293b"}`,
             borderRadius: 8, padding: "14px 18px", marginBottom: 20
           }}>
