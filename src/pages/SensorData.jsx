@@ -4,7 +4,7 @@ import SensorTable from "../components/SensorTable";
 import { SENSORS, CHART_DATA } from "../data/mockData";
 
 export default function SensorData() {
-  // Task 1: State — track which sensors are toggled active/inactive by the user
+  // active/inactive live
   const [sensorStates, setSensorStates] = useState(
     Object.fromEntries(SENSORS.map((s) => [s.id, s.status !== "offline"]))
   );
@@ -25,7 +25,7 @@ export default function SensorData() {
 
   return (
     <>
-      {/* Status summary bar — updates live as sensors are toggled */}
+      {/* live update sensor */}
       <div className="stat-grid" style={{ marginBottom: 16 }}>
         <div className="stat-card blue">
           <div className="stat-icon">📡</div>
@@ -61,7 +61,7 @@ export default function SensorData() {
             🔬 All Sensor Readings
             <span className="card-tag">Live</span>
           </div>
-          {/* Task 2 / Task 1: Filter form — controlled input changes state → filters table */}
+          {/* filter buttons */}
           <div style={{ display: "flex", gap: 6 }}>
             {["all", "active", "inactive"].map((f) => (
               <button

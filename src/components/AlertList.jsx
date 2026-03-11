@@ -5,7 +5,7 @@ const ICONS = {
   resolved: "✅",
 };
 
-// onDismiss is optional — if passed, uses parent state (AlertsPage); otherwise no-op
+
 export default function AlertList({ alerts, onDismiss }) {
   if (alerts.length === 0) {
     return (

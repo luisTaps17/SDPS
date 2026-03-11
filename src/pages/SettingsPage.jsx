@@ -51,7 +51,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
 
   return (
     <>
-      {/* User Profile Form */}
+      {/* user profile ni */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div className="card-title">
@@ -120,7 +120,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
         </div>
       </div>
 
-      {/* Notification Preferences */}
+      {/* notifications ni */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="card-header">
           <div className="card-title">
@@ -162,7 +162,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
         </div>
       </div>
 
-      {/* System Preferences */}
+      {/* system preferences ni */}
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -200,7 +200,7 @@ export default function SettingsPage({ userInfo, setUserInfo, systemStatus, setS
             </div>
           </div>
 
-          {/* Maintenance Mode toggle — updates systemStatus in App.jsx */}
+          {/* maintenance toggle */}
           <div style={{
             display: "flex", justifyContent: "space-between", alignItems: "center",
             background: maintenanceToggle ? "#451a03" : "#ffffff",

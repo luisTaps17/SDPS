@@ -44,7 +44,7 @@ export default function AlertsPage() {
             </span>
           </div>
 
-          {/* Task 2: filter form — controlled state updates list immediately */}
+          
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {filterOptions.map((f) => (
               <button
