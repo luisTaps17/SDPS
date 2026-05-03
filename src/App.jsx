@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import "./styles/global.css";
@@ -12,17 +13,18 @@ import SettingsPage    from "./pages/SettingsPage";
 import Sidebar from "./components/Sidebar";
 import Topbar  from "./components/Topbar";
 
-import { ALERTS } from "./data/mockData";
-
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState({ name: "Admin", email: "admin@sdps.local" });
+  // Check localStorage for existing token on load
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [userInfo, setUserInfo] = useState({
+    name:  localStorage.getItem("username") || "Admin",
+    email: "admin@sdps.local",
+  });
   const [systemStatus, setSystemStatus] = useState("online");
+  const [critCount, setCritCount] = useState(0); // updated by AlertsPage
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const critCount = ALERTS.filter((a) => a.type === "critical").length;
+  const navigate  = useNavigate();
+  const location  = useLocation();
 
   const handleLogin = (info) => {
     if (info) setUserInfo(info);
@@ -31,8 +33,10 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
     setLoggedIn(false);
-    navigate("/login");
+    navigate("/");
   };
 
   if (!loggedIn) {
@@ -66,7 +70,7 @@ export default function App() {
             <Route path="/"          element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/sensors"   element={<SensorData />} />
-            <Route path="/alerts"    element={<AlertsPage />} />
+            <Route path="/alerts"    element={<AlertsPage onCritCountChange={setCritCount} />} />
             <Route path="/threshold" element={<ThresholdConfig />} />
             <Route path="/settings"  element={
               <SettingsPage

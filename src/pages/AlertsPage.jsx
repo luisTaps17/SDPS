@@ -1,38 +1,79 @@
-import { useState } from "react";
-import StatCard from "../components/StatCard";
+// src/pages/AlertsPage.jsx
+import { useEffect, useState } from "react";
+import StatCard  from "../components/StatCard";
 import AlertList from "../components/AlertList";
-import { ALERTS } from "../data/mockData";
+import { apiGet, apiPost } from "../api";
 
-export default function AlertsPage() {
-  // Task 1: State — active filter + dismissed set
-  const [filter, setFilter] = useState("all");
-  const [dismissed, setDismissed] = useState(new Set());
+export default function AlertsPage({ onCritCountChange }) {
+  const [alerts,    setAlerts]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
+  const [filter,    setFilter]    = useState("all");
+  const [toast,     setToast]     = useState("");
 
-  const dismiss = (id) => setDismissed((prev) => new Set([...prev, id]));
-
-  const visible = ALERTS.filter((a) => {
-    if (dismissed.has(a.id)) return false;
-    if (filter === "all") return true;
-    return a.type === filter;
-  });
-
-  const counts = {
-    critical: ALERTS.filter((a) => a.type === "critical").length,
-    warning:  ALERTS.filter((a) => a.type === "warning").length,
-    info:     ALERTS.filter((a) => a.type === "info").length,
-    resolved: ALERTS.filter((a) => a.type === "resolved").length,
+  const loadAlerts = async () => {
+    setLoading(true);
+    try {
+      const data = await apiGet("/alerts/");
+      setAlerts(data);
+      // Update sidebar badge count
+      const critCount = data.filter((a) => !a.is_resolved && a.severity === "critical").length;
+      if (onCritCountChange) onCritCountChange(critCount);
+    } catch {
+      setError("Failed to load alerts. Is the server running?");
+    }
+    setLoading(false);
   };
 
-  const filterOptions = ["all", "critical", "warning", "info", "resolved"];
-  const filterColors = { all: "#3b82f6", critical: "#ef4444", warning: "#f59e0b", info: "#3b82f6", resolved: "#22c55e" };
+  useEffect(() => { loadAlerts(); }, []);
+
+  // Resolve alert via API (replaces local dismiss)
+  const handleDismiss = async (id) => {
+    try {
+      await apiPost(`/alerts/${id}/resolve/`, {});
+      showToast("✅ Alert resolved successfully.");
+      loadAlerts(); // refresh
+    } catch {
+      showToast("❌ Failed to resolve alert.");
+    }
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2800);
+  };
+
+  // Filter logic using API fields
+  const filterOptions = ["all", "flood", "blockage", "sensor_fault", "maintenance"];
+  const filterColors  = {
+    all:          "#3b82f6",
+    flood:        "#ef4444",
+    blockage:     "#f59e0b",
+    sensor_fault: "#8b5cf6",
+    maintenance:  "#22c55e",
+  };
+
+  const visible = alerts.filter((a) => {
+    if (filter === "all") return true;
+    return a.alert_type === filter;
+  });
+
+  // Stats using API fields
+  const counts = {
+    critical:  alerts.filter((a) => a.severity === "critical" && !a.is_resolved).length,
+    unresolved: alerts.filter((a) => !a.is_resolved).length,
+    resolved:  alerts.filter((a) => a.is_resolved).length,
+    total:     alerts.length,
+  };
 
   return (
     <>
+      {/* Stat Cards */}
       <div className="stat-grid">
-        <StatCard label="Critical" value={counts.critical} icon="🚨" color="red"    sub="Immediate action needed" />
-        <StatCard label="Warnings" value={counts.warning}  icon="⚠️" color="yellow" sub="Needs monitoring" />
-        <StatCard label="Info"     value={counts.info}     icon="ℹ️" color="blue"   sub="Informational only" />
-        <StatCard label="Resolved" value={counts.resolved} icon="✅" color="green"  sub="Cleared alerts" />
+        <StatCard label="Critical"   value={counts.critical}   icon="🚨" color="red"    sub="Immediate action needed" />
+        <StatCard label="Unresolved" value={counts.unresolved} icon="⚠️" color="yellow" sub="Needs attention" />
+        <StatCard label="Resolved"   value={counts.resolved}   icon="✅" color="green"  sub="Cleared alerts" />
+        <StatCard label="Total"      value={counts.total}      icon="🔔" color="blue"   sub="All time" />
       </div>
 
       <div className="card">
@@ -40,43 +81,68 @@ export default function AlertsPage() {
           <div className="card-title">
             🔔 Alert History
             <span className="card-tag">
-              {visible.length} shown{dismissed.size > 0 ? ` · ${dismissed.size} dismissed` : ""}
+              {loading ? "Loading..." : `${visible.length} shown`}
             </span>
           </div>
 
-          
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {/* Refresh button */}
+            <button
+              onClick={loadAlerts}
+              style={{
+                padding: "4px 12px", borderRadius: 6,
+                border: "1px solid #334155", background: "#1e293b",
+                color: "#fff", cursor: "pointer", fontSize: 12,
+              }}
+            >
+              🔄 Refresh
+            </button>
+
+            {/* Filter buttons */}
             {filterOptions.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 style={{
-                  padding: "4px 12px",
-                  borderRadius: 6,
+                  padding: "4px 12px", borderRadius: 6,
                   border: "1px solid #334155",
                   background: filter === f ? filterColors[f] : "#1e293b",
-                  color: "#fff",
-                  cursor: "pointer",
-                  fontSize: 12,
+                  color: "#fff", cursor: "pointer", fontSize: 12,
                   textTransform: "capitalize",
                 }}
               >
-                {f}
+                {f.replace(/_/g, " ")}
               </button>
             ))}
           </div>
         </div>
 
         <div className="card-body">
-          {visible.length === 0 ? (
+          {loading && (
+            <div style={{ color: "var(--text-light)", textAlign: "center", padding: 32 }}>
+              Loading alerts...
+            </div>
+          )}
+
+          {!loading && error && (
+            <div style={{ color: "var(--red)", textAlign: "center", padding: 32 }}>
+              ❌ {error}
+            </div>
+          )}
+
+          {!loading && !error && visible.length === 0 && (
             <div style={{ color: "var(--text-light)", textAlign: "center", padding: 32 }}>
               No alerts match the current filter.
             </div>
-          ) : (
-            <AlertList alerts={visible} onDismiss={dismiss} />
+          )}
+
+          {!loading && !error && visible.length > 0 && (
+            <AlertList alerts={visible} onDismiss={handleDismiss} />
           )}
         </div>
       </div>
+
+      {toast && <div className="toast">{toast}</div>}
     </>
   );
 }

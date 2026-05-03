@@ -1,3 +1,4 @@
+// src/pages/LoginPage.jsx
 import { useState } from "react";
 
 export default function LoginPage({ onLogin }) {
@@ -6,17 +7,37 @@ export default function LoginPage({ onLogin }) {
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!username || !password) {
       setError("Please enter your username and password.");
       return;
     }
-    if (username === "admin" && password === "admin123") {
-      setLoading(true);
-      setTimeout(() => { setLoading(false); onLogin(); }, 1000);
-    } else {
-      setError("Invalid credentials. Please try again.");
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/auth/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        // Save token to localStorage for all future API calls
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("username", username);
+        onLogin({ name: username, email: `${username}@sdps.local` });
+      } else {
+        setError("Invalid credentials. Please try again.");
+      }
+    } catch {
+      setError("Cannot connect to server. Make sure the backend is running.");
     }
+
+    setLoading(false);
   };
 
   return (

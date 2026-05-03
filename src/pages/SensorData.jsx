@@ -1,20 +1,64 @@
-import { useState } from "react";
+// src/pages/SensorData.jsx
+import { useEffect, useState } from "react";
 import BarChart    from "../components/BarChart";
 import SensorTable from "../components/SensorTable";
-import { SENSORS, CHART_DATA } from "../data/mockData";
+import { apiGet }  from "../api";
+import { CHART_DATA } from "../data/mockData";
+
+// Map API SensorData + DrainageLocation into the shape SensorTable expects
+function mapToTableRow(reading, locations) {
+  const loc = locations.find((l) => l.id === reading.location);
+  const waterLevel = Math.round(reading.water_level ?? 0);
+  const status =
+    reading.blockage_detected    ? "critical" :
+    waterLevel > 85              ? "critical" :
+    waterLevel > 65              ? "warning"  : "ok";
+
+  return {
+    id:         `SN-${String(reading.id).padStart(3, "0")}`,
+    location:   loc?.name ?? `Location ${reading.location}`,
+    waterLevel,
+    waste:      Math.round(reading.turbidity ?? 0),
+    status,
+    lastPing:   new Date(reading.timestamp).toLocaleTimeString(),
+    temp:       reading.temperature != null ? `${reading.temperature}°C` : "--",
+    _raw:       reading,
+  };
+}
 
 export default function SensorData() {
-  // active/inactive live
-  const [sensorStates, setSensorStates] = useState(
-    Object.fromEntries(SENSORS.map((s) => [s.id, s.status !== "offline"]))
-  );
+  const [sensors,      setSensors]      = useState([]);
+  const [locations,    setLocations]    = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [sensorStates, setSensorStates] = useState({});
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sensorRes, locationRes] = await Promise.all([
+          apiGet("/sensor-data/"),
+          apiGet("/locations/"),
+        ]);
+        setLocations(locationRes);
+        const mapped = sensorRes.map((r) => mapToTableRow(r, locationRes));
+        setSensors(mapped);
+        // default all to active
+        setSensorStates(Object.fromEntries(mapped.map((s) => [s.id, s.status !== "offline"])));
+      } catch {
+        setError("Failed to load sensor data.");
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, []);
 
   const toggleSensor = (id) => {
     setSensorStates((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const activeSensors = SENSORS.filter((s) => {
+  const filtered = sensors.filter((s) => {
     const isActive = sensorStates[s.id];
     if (filterStatus === "active")   return isActive;
     if (filterStatus === "inactive") return !isActive;
@@ -25,24 +69,28 @@ export default function SensorData() {
 
   return (
     <>
-      {/* live update sensor */}
+      {/* Stats */}
       <div className="stat-grid" style={{ marginBottom: 16 }}>
         <div className="stat-card blue">
           <div className="stat-icon">📡</div>
           <div>
-            <div className="stat-value">{activeCount} <span className="stat-unit">/ {SENSORS.length}</span></div>
+            <div className="stat-value">
+              {loading ? "—" : activeCount}
+              <span className="stat-unit"> / {sensors.length}</span>
+            </div>
             <div className="stat-label">Active Sensors</div>
           </div>
         </div>
         <div className="stat-card red">
           <div className="stat-icon">🔴</div>
           <div>
-            <div className="stat-value">{SENSORS.length - activeCount}</div>
+            <div className="stat-value">{loading ? "—" : sensors.length - activeCount}</div>
             <div className="stat-label">Inactive / Off</div>
           </div>
         </div>
       </div>
 
+      {/* Chart */}
       <div className="card">
         <div className="card-header">
           <div className="card-title">
@@ -55,26 +103,26 @@ export default function SensorData() {
         </div>
       </div>
 
+      {/* Sensor Table */}
       <div className="card">
         <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div className="card-title">
             🔬 All Sensor Readings
-            <span className="card-tag">Live</span>
+            <span className="card-tag">
+              {loading ? "Loading..." : `${sensors.length} records`}
+            </span>
           </div>
-          {/* filter buttons */}
+
           <div style={{ display: "flex", gap: 6 }}>
             {["all", "active", "inactive"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilterStatus(f)}
                 style={{
-                  padding: "4px 12px",
-                  borderRadius: 6,
+                  padding: "4px 12px", borderRadius: 6,
                   border: "1px solid #334155",
                   background: filterStatus === f ? "#3b82f6" : "#1e293b",
-                  color: "#fff",
-                  cursor: "pointer",
-                  fontSize: 12,
+                  color: "#fff", cursor: "pointer", fontSize: 12,
                   textTransform: "capitalize",
                 }}
               >
@@ -83,12 +131,30 @@ export default function SensorData() {
             ))}
           </div>
         </div>
+
         <div className="card-body" style={{ padding: 0 }}>
-          <SensorTable
-            sensors={activeSensors}
-            sensorStates={sensorStates}
-            onToggle={toggleSensor}
-          />
+          {loading && (
+            <div style={{ textAlign: "center", padding: 32, color: "var(--text-light)" }}>
+              Loading sensor data...
+            </div>
+          )}
+          {!loading && error && (
+            <div style={{ textAlign: "center", padding: 32, color: "var(--red)" }}>
+              ❌ {error}
+            </div>
+          )}
+          {!loading && !error && sensors.length === 0 && (
+            <div style={{ textAlign: "center", padding: 32, color: "var(--text-light)" }}>
+              No sensor readings found. Add data via the admin panel or API.
+            </div>
+          )}
+          {!loading && !error && sensors.length > 0 && (
+            <SensorTable
+              sensors={filtered}
+              sensorStates={sensorStates}
+              onToggle={toggleSensor}
+            />
+          )}
         </div>
       </div>
     </>
