@@ -12,7 +12,7 @@ const ICONS = {
   maintenance:  "🔧",
 };
 
-export default function AlertList({ alerts, onDismiss }) {
+export default function AlertList({ alerts, onDismiss, onEdit, onDelete }) {
   if (!alerts || alerts.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "32px 0", color: "var(--text-light)", fontSize: 13 }}>
@@ -44,17 +44,29 @@ export default function AlertList({ alerts, onDismiss }) {
 
             <div className="alert-right">
               <span className={`type-badge badge-${type}`}>{type}</span>
-              {!resolved && onDismiss && (
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button className="btn-ack">Acknowledge</button>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                {onEdit && (
+                  <button
+                    className="btn-ack"
+                    onClick={() => onEdit(a)}
+                  >✏️ Edit</button>
+                )}
+                {onDelete && (
                   <button
                     className="btn-dismiss"
-                    onClick={() => onDismiss(a.id)}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              )}
+                    onClick={() => onDelete(a)}
+                  >🗑️ Delete</button>
+                )}
+                {!resolved && onDismiss && (
+                  <>
+                    <button className="btn-ack">Acknowledge</button>
+                    <button
+                      className="btn-dismiss"
+                      onClick={() => onDismiss(a.id)}
+                    >Dismiss</button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         );

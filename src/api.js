@@ -17,7 +17,7 @@ export const apiGet = async (endpoint) => {
   });
   if (res.status === 401) { handle401(); return; }
   if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
+  return res.json(); // unchanged
 };
 
 export const apiPost = async (endpoint, body) => {
@@ -30,8 +30,13 @@ export const apiPost = async (endpoint, body) => {
     body: JSON.stringify(body),
   });
   if (res.status === 401) { handle401(); return; }
-  if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("API error response:", errText);  // ✅ add this
+    throw new Error(`Error ${res.status}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 };
 
 export const apiPut = async (endpoint, body) => {
@@ -45,7 +50,8 @@ export const apiPut = async (endpoint, body) => {
   });
   if (res.status === 401) { handle401(); return; }
   if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
+  const text = await res.text();           // ✅ changed
+  return text ? JSON.parse(text) : null;   // ✅ changed
 };
 
 export const apiDelete = async (endpoint) => {
@@ -54,5 +60,5 @@ export const apiDelete = async (endpoint) => {
     headers: { Authorization: `Token ${getToken()}` },
   });
   if (res.status === 401) { handle401(); return; }
-  return res.ok;
+  return res.ok; // unchanged
 };
