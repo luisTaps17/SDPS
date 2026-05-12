@@ -9,46 +9,43 @@ import { apiGet }  from "../api";
 import { CHART_DATA } from "../data/mockData";
 
 export default function Dashboard() {
-  const [alerts,    setAlerts]    = useState([]);
-  const [locations, setLocations] = useState([]);
+  const [alerts,     setAlerts]     = useState([]);
+  const [locations,  setLocations]  = useState([]);
   const [sensorData, setSensorData] = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [error,     setError]     = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(null);
 
-  useEffect(() => {
-    const loadAll = async () => {
-      try {
-        const [alertsData, locationsData, sensorRes] = await Promise.all([
-          apiGet("/alerts/"),
-          apiGet("/locations/"),
-          apiGet("/sensor-data/"),
-        ]);
-        setAlerts(alertsData);
-        setLocations(locationsData);
-        setSensorData(sensorRes);
-      } catch {
-        setError("Failed to load dashboard data.");
-      }
-      setLoading(false);
-    };
-    loadAll();
-  }, []);
+  const loadAll = async () => {
+    setLoading(true);
+    try {
+      const [alertsData, locationsData, sensorRes] = await Promise.all([
+        apiGet("/alerts/"),
+        apiGet("/locations/"),
+        apiGet("/sensor-data/"),
+      ]);
+      setAlerts(alertsData);
+      setLocations(locationsData);
+      setSensorData(sensorRes);
+    } catch {
+      setError("Failed to load dashboard data.");
+    }
+    setLoading(false);
+  };
 
-  // Stats derived from API data
-  const critCount     = alerts.filter((a) => !a.is_resolved && a.severity === "critical").length;
+  useEffect(() => { loadAll(); }, []);
+
+  const critCount       = alerts.filter((a) => !a.is_resolved && a.severity === "critical").length;
   const unresolvedCount = alerts.filter((a) => !a.is_resolved).length;
   const activeLocations = locations.filter((l) => l.status === "active").length;
 
-  // Build gauges from locations + latest sensor data
   const gauges = locations.slice(0, 3).map((loc) => {
     const reading = sensorData.find((s) => s.location === loc.id);
-    const pct = reading ? Math.round(reading.water_level) : 0;
-    const status = pct > 85 ? "danger" : pct > 65 ? "warning" : "normal";
+    const pct     = reading ? Math.round(reading.water_level) : 0;
+    const status  = pct > 85 ? "danger" : pct > 65 ? "warning" : "normal";
     return { location: loc.name, pct, status };
   });
 
-  // Build chart data from sensor readings grouped by day
-  const chartData = CHART_DATA; // keep mock chart for now — real chart needs time-series API
+  const chartData = CHART_DATA;
 
   if (loading) {
     return (
@@ -68,7 +65,6 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Stat Cards */}
       <div className="stat-grid">
         <StatCard
           label="Active Locations"
@@ -101,7 +97,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Chart + Gauges */}
       <div className="two-col">
         <div className="card">
           <div className="card-header">
@@ -131,20 +126,26 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Alerts */}
       <div className="card">
-        <div className="card-header">
+        <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div className="card-title">
             🔔 Recent Alerts
             <span className="card-tag">Latest 4</span>
           </div>
+          <button
+            onClick={loadAll}
+            style={{
+              padding: "4px 12px", borderRadius: 6,
+              border: "1px solid #334155", background: "#1e293b",
+              color: "#fff", cursor: "pointer", fontSize: 12,
+            }}
+          >🔄 Refresh</button>
         </div>
         <div className="card-body">
           <AlertList alerts={alerts.slice(0, 4)} />
         </div>
       </div>
 
-      {/* Drainage Locations */}
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card-header">
           <div className="card-title">
@@ -153,7 +154,12 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="card-body">
-          <LocationList locations={locations} loading={false} error={null} />
+          <LocationList
+            locations={locations}
+            loading={false}
+            error={null}
+            onRefresh={loadAll}
+          />
         </div>
       </div>
     </>
